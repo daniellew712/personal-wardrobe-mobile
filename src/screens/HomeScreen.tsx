@@ -1,10 +1,31 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import FirebaseTest from '../components/FirebaseTest';
 
 export default function HomeScreen() {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Sign Out', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await signOut();
+            } catch (error: any) {
+              Alert.alert('Error', 'Failed to sign out');
+            }
+          }
+        }
+      ]
+    );
+  };
 
   if (loading) {
     return (
@@ -22,7 +43,12 @@ export default function HomeScreen() {
         <Text style={styles.title}>Personal Wardrobe</Text>
         <Text style={styles.subtitle}>Organize your style</Text>
         {user && (
-          <Text style={styles.userInfo}>Welcome, {user.email}</Text>
+          <View style={styles.userContainer}>
+            <Text style={styles.userInfo}>Welcome, {user.email}</Text>
+            <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+              <Text style={styles.signOutText}>Sign Out</Text>
+            </TouchableOpacity>
+          </View>
         )}
         {!user && (
           <Text style={styles.userInfo}>Not authenticated</Text>
@@ -81,6 +107,22 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.9)',
     marginTop: 8,
     fontStyle: 'italic',
+  },
+  userContainer: {
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  signOutButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginTop: 8,
+  },
+  signOutText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '500',
   },
   loadingContainer: {
     flex: 1,
