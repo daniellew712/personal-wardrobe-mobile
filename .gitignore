@@ -38,3 +38,7 @@ yarn-error.*
 
 # vscode
 /.vscode
+
+# eslint
+prettier.config.js
+eslint.config.js

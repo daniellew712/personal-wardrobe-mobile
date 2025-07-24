@@ -27,15 +27,15 @@ export default function HomeScreen() {
     );
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+    if (loading) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <View style={styles.loadingContainer}>
+                    <Text style={styles.loadingText}>Loading...</Text>
+                </View>
+            </SafeAreaView>
+        )
+    }
 
   return (
     <SafeAreaView style={styles.container}>
