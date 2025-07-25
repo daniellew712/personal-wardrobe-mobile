@@ -1,3 +1,4 @@
+// manage the authetication state through the whole app
 import React from 'react'
 import {
     View,
@@ -5,6 +6,7 @@ import {
     StyleSheet,
     SafeAreaView,
     ActivityIndicator,
+    ImageBackground,
 } from 'react-native'
 
 interface LoadingScreenProps {
@@ -15,23 +17,32 @@ export default function LoadingScreen({
     message = 'Loading...',
 }: LoadingScreenProps) {
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.content}>
-                <View style={styles.logoContainer}>
-                    <Text style={styles.appName}>Waves</Text>
-                    <Text style={styles.tagline}>Organize your style</Text>
-                </View>
+        <ImageBackground
+            source={require('../../assets/Image.png')}
+            style={styles.backgroundImage}
+            resizeMode="cover"
+        >
+            <SafeAreaView style={styles.container}>
+                <View style={styles.content}>
+                    <View style={styles.logoContainer}>
+                        <Text style={styles.appName}>Waves</Text>
+                        <Text style={styles.tagline}>Organize your style</Text>
+                    </View>
 
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#6B73FF" />
-                    <Text style={styles.loadingText}>{message}</Text>
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color="#6B73FF" />
+                        <Text style={styles.loadingText}>{message}</Text>
+                    </View>
                 </View>
-            </View>
-        </SafeAreaView>
+            </SafeAreaView>
+        </ImageBackground>
     )
 }
 
 const styles = StyleSheet.create({
+    backgroundImage: {
+        flex: 1,
+    },
     container: {
         flex: 1,
         backgroundColor: '#f5f5f5',

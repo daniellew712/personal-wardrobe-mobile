@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.xiaoyuew66.personalwardrobe",
+      "bundleIdentifier": "com.personalwardrobe.mobile",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }

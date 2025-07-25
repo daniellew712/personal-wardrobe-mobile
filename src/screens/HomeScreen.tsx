@@ -6,12 +6,15 @@ import {
     SafeAreaView,
     TouchableOpacity,
     Alert,
+    ImageBackground,
 } from 'react-native'
 import { useAuth } from '../contexts/AuthContext'
-import FirebaseTest from '../components/FirebaseTest'
+// import { useNavigation } from '@react-navigation/native'
+// or use Expo Router
 
 export default function HomeScreen() {
     const { user, loading, signOut } = useAuth()
+    // const navigation = useNavigation()
 
     const handleSignOut = async () => {
         Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -41,71 +44,78 @@ export default function HomeScreen() {
     }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.title}>Personal Wardrobe</Text>
-                <Text style={styles.subtitle}>Organize your style</Text>
-                {user && (
-                    <View style={styles.userContainer}>
-                        <Text style={styles.userInfo}>
-                            Welcome, {user.email}
+        <ImageBackground
+            source={require('../../assets/accountbackground.png')}
+            style={styles.backgroundImage}
+            resizeMode="cover"
+        >
+            <SafeAreaView style={styles.container}>
+                <View style={styles.header}>
+                    <Text style={styles.title}>Personal Wardrobe</Text>
+                    <Text style={styles.subtitle}>Find Your Perfect Style</Text>
+                    {user && (
+                        <View style={styles.userContainer}>
+                            <Text style={styles.userInfo}>
+                                Welcome, {user.email}
+                            </Text>
+                            <TouchableOpacity
+                                style={styles.signOutButton}
+                                onPress={handleSignOut}
+                            >
+                                <Text style={styles.signOutText}>Sign Out</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                    {!user && (
+                        <Text style={styles.userInfo}>Not authenticated</Text>
+                    )}
+                </View>
+
+                <View style={styles.content}>
+                    <TouchableOpacity style={styles.card}>
+                        <Text style={styles.cardTitle}>My Clothes</Text>
+                        <Text style={styles.cardSubtitle}>
+                            Browse your wardrobe
                         </Text>
-                        <TouchableOpacity
-                            style={styles.signOutButton}
-                            onPress={handleSignOut}
-                        >
-                            <Text style={styles.signOutText}>Sign Out</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
-                {!user && (
-                    <Text style={styles.userInfo}>Not authenticated</Text>
-                )}
-            </View>
+                    </TouchableOpacity>
 
-            <View style={styles.content}>
-                <FirebaseTest />
+                    <TouchableOpacity style={styles.card}>
+                        <Text style={styles.cardTitle}>Outfits</Text>
+                        <Text style={styles.cardSubtitle}>
+                            Create and save outfits
+                        </Text>
+                    </TouchableOpacity>
 
-                <TouchableOpacity style={styles.card}>
-                    <Text style={styles.cardTitle}>My Clothes</Text>
-                    <Text style={styles.cardSubtitle}>
-                        Browse your wardrobe
-                    </Text>
-                </TouchableOpacity>
+                    <TouchableOpacity style={styles.card}>
+                        <Text style={styles.cardTitle}>Add Item</Text>
+                        <Text style={styles.cardSubtitle}>
+                            Add new clothing items
+                        </Text>
+                    </TouchableOpacity>
 
-                <TouchableOpacity style={styles.card}>
-                    <Text style={styles.cardTitle}>Outfits</Text>
-                    <Text style={styles.cardSubtitle}>
-                        Create and save outfits
-                    </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.card}>
-                    <Text style={styles.cardTitle}>Add Item</Text>
-                    <Text style={styles.cardSubtitle}>
-                        Add new clothing items
-                    </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.card}>
-                    <Text style={styles.cardTitle}>Statistics</Text>
-                    <Text style={styles.cardSubtitle}>
-                        View wearing patterns
-                    </Text>
-                </TouchableOpacity>
-            </View>
-        </SafeAreaView>
+                    <TouchableOpacity style={styles.card}>
+                        <Text style={styles.cardTitle}>Statistics</Text>
+                        <Text style={styles.cardSubtitle}>
+                            View wearing patterns
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </SafeAreaView>
+        </ImageBackground>
     )
 }
 
 const styles = StyleSheet.create({
+    backgroundImage: {
+        flex: 1,
+    },
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: 'transparent',
     },
     header: {
         padding: 20,
-        backgroundColor: '#6B73FF',
+        backgroundColor: '#e5d6b3',
         alignItems: 'center',
     },
     title: {
@@ -166,6 +176,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 3.84,
         elevation: 5,
+        // transform: [{ scale: 1 }],
     },
     cardTitle: {
         fontSize: 18,
