@@ -11,7 +11,7 @@ export default function Index() {
     }
 
     if (!user) {
-        return <Redirect href={ROUTES.AUTH.LOGIN} />
+        return <Redirect href="/welcome" />
     }
 
     return <Redirect href={ROUTES.HOME} />
