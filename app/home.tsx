@@ -1,36 +1,40 @@
 import React from 'react'
-import { Link, router } from 'expo-router'
+import { router } from 'expo-router'
 import {
     View,
+    ScrollView,
     Text,
     StyleSheet,
     SafeAreaView,
     TouchableOpacity,
     Alert,
     ImageBackground,
+    Image,
+    Dimensions,
 } from 'react-native'
 import { useAuth } from '../src/contexts/AuthContext'
+import { Ionicons } from '@expo/vector-icons'
 
 export default function HomeScreen() {
     const { user, loading, signOut } = useAuth()
 
-    const handleSignOut = async () => {
-        Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-            { text: 'Cancel', style: 'cancel' },
-            {
-                text: 'Sign Out',
-                style: 'destructive',
-                onPress: async () => {
-                    try {
-                        await signOut()
-                        router.replace('/auth/login')
-                    } catch {
-                        Alert.alert('Error', 'Failed to sign out')
-                    }
-                },
-            },
-        ])
-    }
+    // const handleSignOut = async () => {
+    //     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
+    //         { text: 'Cancel', style: 'cancel' },
+    //         {
+    //             text: 'Sign Out',
+    //             style: 'destructive',
+    //             onPress: async () => {
+    //                 try {
+    //                     await signOut()
+    //                     router.replace('/auth/login')
+    //                 } catch {
+    //                     Alert.alert('Error', 'Failed to sign out')
+    //                 }
+    //             },
+    //         },
+    //     ])
+    // }
 
     if (loading) {
         return (
@@ -50,18 +54,28 @@ export default function HomeScreen() {
         >
             <SafeAreaView style={styles.container}>
                 <View style={styles.header}>
-                    <Text style={styles.title}>Personal Wardrobe</Text>
-                    <Text style={styles.subtitle}>Find Your Perfect Style</Text>
                     {user && (
                         <View style={styles.userContainer}>
                             <Text style={styles.userInfo}>
                                 Welcome, {user.email}
                             </Text>
                             <TouchableOpacity
-                                style={styles.signOutButton}
-                                onPress={handleSignOut}
+                                style={styles.closetnavigator}
+                                onPress={() => router.push('/wardrobe')}
                             >
-                                <Text style={styles.signOutText}>Sign Out</Text>
+                                <Text style={styles.closetText}>
+                                    View My Closet
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.settingsIcon}
+                                onPress={() => router.push('/profile')}
+                            >
+                                <Ionicons
+                                    name="settings-outline"
+                                    size={24}
+                                    color="white"
+                                />
                             </TouchableOpacity>
                         </View>
                     )}
@@ -71,29 +85,12 @@ export default function HomeScreen() {
                 </View>
 
                 <View style={styles.content}>
-                    <Link href="/wardrobe" asChild>
-                        <TouchableOpacity style={styles.card}>
-                            <Text style={styles.cardTitle}>My Clothes</Text>
-                            <Text style={styles.cardSubtitle}>
-                                Browse your wardrobe
-                            </Text>
-                        </TouchableOpacity>
-                    </Link>
-
                     <TouchableOpacity style={styles.card}>
                         <Text style={styles.cardTitle}>Outfits</Text>
                         <Text style={styles.cardSubtitle}>
                             Create and save outfits
                         </Text>
                     </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.card}>
-                        <Text style={styles.cardTitle}>Add Item</Text>
-                        <Text style={styles.cardSubtitle}>
-                            Add new clothing items
-                        </Text>
-                    </TouchableOpacity>
-
                     <TouchableOpacity style={styles.card}>
                         <Text style={styles.cardTitle}>Statistics</Text>
                         <Text style={styles.cardSubtitle}>
@@ -101,6 +98,9 @@ export default function HomeScreen() {
                         </Text>
                     </TouchableOpacity>
                 </View>
+                <ScrollView horizontal={true}>
+                    {/* gallery items go here */}
+                </ScrollView>
             </SafeAreaView>
         </ImageBackground>
     )
@@ -119,6 +119,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#e5d6b3',
         alignItems: 'center',
     },
+    settingsIcon: {
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        padding: 5,
+        borderRadius: 30,
+    },
     title: {
         fontSize: 28,
         fontWeight: 'bold',
@@ -129,6 +136,30 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: 'rgba(255, 255, 255, 0.8)',
     },
+    closetText: {
+        fontSize: 10,
+        fontWeight: 500,
+        color: 'white',
+    },
+    closetnavigator: {
+        backgroundColor: 'black',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 8,
+        marginTop: 10,
+        alignSelf: 'flex-start',
+        minWidth: 100,
+    },
+    closetTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: 'white',
+        marginBottom: 2,
+    },
+    closetSubtitle: {
+        fontSize: 12,
+        color: 'rgba(255, 255, 255, 0.8)',
+    },
     userInfo: {
         fontSize: 14,
         color: 'rgba(255, 255, 255, 0.9)',
@@ -136,21 +167,29 @@ const styles = StyleSheet.create({
         fontStyle: 'italic',
     },
     userContainer: {
+        alignItems: 'flex-start',
+        marginTop: 8,
+        width: '100%',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
         alignItems: 'center',
         marginTop: 8,
     },
-    signOutButton: {
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 6,
-        marginTop: 8,
-    },
-    signOutText: {
-        color: 'white',
-        fontSize: 12,
-        fontWeight: '500',
-    },
+    // signOutButton: {
+    //     backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    //     paddingHorizontal: 12,
+    //     paddingVertical: 6,
+    //     borderRadius: 6,
+    //     marginTop: 8,
+    // },
+    // signOutText: {
+    //     color: 'white',
+    //     fontSize: 12,
+    //     fontWeight: '500',
+    // },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
