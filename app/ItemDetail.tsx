@@ -12,6 +12,7 @@ import {
     TextInput,
     KeyboardAvoidingView,
     Platform,
+    Image,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { apiService } from '../src/services/api'
@@ -21,8 +22,7 @@ export default function ItemDetailScreen() {
     const [item, setItem] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     // ai api
-
-    // Chat states
+    // Chat
     const [chatMessages, setChatMessages] = useState<
         { id: string; text: string; isUser: boolean; timestamp: string }[]
     >([])
@@ -45,7 +45,6 @@ export default function ItemDetailScreen() {
         setChatLoading(true)
 
         try {
-            // Create context-aware message about the clothing item
             const contextMessage = `I have a ${item?.category || 'clothing item'} called "${item?.name || 'this item'}"${
                 item?.brand ? ` from ${item.brand}` : ''
             }${item?.color ? ` in ${item.color}` : ''}${item?.size ? `, size ${item.size}` : ''}${
@@ -66,7 +65,6 @@ export default function ItemDetailScreen() {
             setChatMessages((prev) => [...prev, aiMessage])
         } catch (error: any) {
             console.error('Chat error:', error)
-            // Show more detailed error information
             if (error.response) {
                 Alert.alert(
                     'Error',
@@ -144,59 +142,116 @@ export default function ItemDetailScreen() {
                     <Ionicons name="arrow-back" size={24} color="white" />
                 </TouchableOpacity>
                 <Text style={styles.title}>Item Details</Text>
+                <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={async () => {
+                        try {
+                            await apiService.deleteClothingItem(id as string)
+                            Alert.alert('Deleted', 'Item deleted!')
+                            router.back()
+                        } catch (error) {
+                            Alert.alert('Error', 'Failed to delete item')
+                        }
+                    }}
+                >
+                    <Ionicons name="trash" size={22} color="white" />
+                </TouchableOpacity>
             </View>
 
             {/* Content */}
             <ScrollView style={styles.content}>
-                <View style={styles.detailCard}>
-                    <Text style={styles.itemName}>{item.name}</Text>
-
-                    <View style={styles.detailRow}>
-                        <Text style={styles.label}>Category:</Text>
-                        <Text style={styles.value}>{item.category}</Text>
+                <View style={styles.rowContainer}>
+                    <View style={styles.imageContainer}>
+                        {item.imageUrl && (
+                            <Image
+                                source={{ uri: item.imageUrl }}
+                                style={styles.detailImage}
+                            />
+                        )}
+                        {/* Heart Button */}
+                        <TouchableOpacity
+                            style={styles.heartButton}
+                            onPress={async () => {
+                                try {
+                                    const updated =
+                                        await apiService.putClothingItem(
+                                            id as string,
+                                            { favorite: !item.favorite }
+                                        )
+                                    setItem((prev: any) => ({
+                                        ...prev,
+                                        favorite: updated.favorite,
+                                    }))
+                                } catch {
+                                    Alert.alert('Failed to update favorite')
+                                }
+                            }}
+                        >
+                            <Ionicons
+                                name={item.favorite ? 'heart' : 'heart-outline'}
+                                size={18}
+                                color={item.favorite ? '#e74c3c' : '#aaa'}
+                            />
+                        </TouchableOpacity>
                     </View>
-
-                    <View style={styles.detailRow}>
-                        <Text style={styles.label}>Color:</Text>
-                        <Text style={styles.value}>{item.color}</Text>
+                    <View style={styles.fixedDetailCard}>
+                        <Text style={styles.itemName}>{item.name}</Text>
+                        <View style={styles.detailRow}>
+                            <Text style={styles.label}>Category:</Text>
+                            <Text style={styles.value}>{item.category}</Text>
+                        </View>
+                        <View style={styles.detailRow}>
+                            <Text style={styles.label}>Color:</Text>
+                            <Text style={styles.value}>{item.color}</Text>
+                        </View>
+                        {item.brand && (
+                            <View style={styles.detailRow}>
+                                <Text style={styles.label}>Brand:</Text>
+                                <Text style={styles.value}>{item.brand}</Text>
+                            </View>
+                        )}
+                        {item.size && (
+                            <View style={styles.detailRow}>
+                                <Text style={styles.label}>Size:</Text>
+                                <Text style={styles.value}>{item.size}</Text>
+                            </View>
+                        )}
+                        {item.material && (
+                            <View style={styles.detailRow}>
+                                <Text style={styles.label}>Material:</Text>
+                                <Text style={styles.value}>
+                                    {item.material}
+                                </Text>
+                            </View>
+                        )}
+                        {item.tags && item.tags.length > 0 && (
+                            <View style={styles.detailRow}>
+                                <Text style={styles.label}>Tags:</Text>
+                                <Text style={styles.value}>
+                                    {item.tags.join(', ')}
+                                </Text>
+                            </View>
+                        )}
+                        {item.notes && (
+                            <View style={styles.notesSection}>
+                                <Text style={styles.label}>Notes:</Text>
+                                <Text style={styles.notesText}>
+                                    {item.notes}
+                                </Text>
+                            </View>
+                        )}
+                        <TouchableOpacity
+                            style={styles.editButton}
+                            onPress={() =>
+                                router.push({
+                                    pathname: '/editItem',
+                                    params: { id },
+                                })
+                            }
+                        >
+                            <Ionicons name="pencil" size={18} color="#c19a6b" />
+                        </TouchableOpacity>
                     </View>
-
-                    {item.brand && (
-                        <View style={styles.detailRow}>
-                            <Text style={styles.label}>Brand:</Text>
-                            <Text style={styles.value}>{item.brand}</Text>
-                        </View>
-                    )}
-
-                    {item.size && (
-                        <View style={styles.detailRow}>
-                            <Text style={styles.label}>Size:</Text>
-                            <Text style={styles.value}>{item.size}</Text>
-                        </View>
-                    )}
-
-                    {item.material && (
-                        <View style={styles.detailRow}>
-                            <Text style={styles.label}>Material:</Text>
-                            <Text style={styles.value}>{item.material}</Text>
-                        </View>
-                    )}
-
-                    {item.tags && item.tags.length > 0 && (
-                        <View style={styles.detailRow}>
-                            <Text style={styles.label}>Tags:</Text>
-                            <Text style={styles.value}>
-                                {item.tags.join(', ')}
-                            </Text>
-                        </View>
-                    )}
-
-                    {item.notes && (
-                        <View style={styles.notesSection}>
-                            <Text style={styles.label}>Notes:</Text>
-                            <Text style={styles.notesText}>{item.notes}</Text>
-                        </View>
-                    )}
                 </View>
 
                 {/* Chat Section */}
@@ -316,21 +371,77 @@ const styles = StyleSheet.create({
         backgroundColor: '#c19a6b',
         flexDirection: 'row',
         alignItems: 'center',
+        position: 'relative',
+    },
+    editButton: {
+        position: 'absolute',
+        right: 16,
+        bottom: 12,
+        padding: 8,
+        zIndex: 2,
+    },
+    deleteButton: {
+        position: 'absolute',
+        right: 20,
+        top: 20,
+        padding: 8,
+        zIndex: 2,
     },
     backButton: {
         padding: 8,
-        marginRight: 15,
     },
     title: {
         fontSize: 20,
         fontWeight: 'bold',
         color: 'white',
+        textAlign: 'center',
+        flex: 1,
     },
     content: {
         flex: 1,
         padding: 20,
     },
-    detailCard: {
+    rowContainer: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+        marginBottom: 20,
+    },
+    imageContainer: {
+        width: 150,
+        height: 220,
+        marginRight: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 3,
+        elevation: 2,
+        position: 'relative',
+    },
+    detailImage: {
+        width: 140,
+        height: 200,
+        borderRadius: 8,
+        resizeMode: 'cover',
+    },
+    heartButton: {
+        position: 'absolute',
+        right: 8,
+        bottom: 12,
+        backgroundColor: 'white',
+        borderRadius: 20,
+        padding: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+    },
+    fixedDetailCard: {
+        width: 220,
         backgroundColor: 'white',
         padding: 20,
         borderRadius: 12,

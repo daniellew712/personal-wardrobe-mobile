@@ -10,10 +10,17 @@ import {
     ScrollView,
     Alert,
     ImageBackground,
+    Image,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { apiService } from '../src/services/api'
-import { CLOTHING_CATEGORIES, CLOTHING_TAGS } from '../src/lib/constants'
+import {
+    CLOTHING_CATEGORIES,
+    CLOTHING_TAGS,
+    CLOTHING_COLORS,
+} from '../src/lib/constants'
+import * as ImagePicker from 'expo-image-picker'
+import { uploadImage } from '../src/services/imageService'
 
 export default function AddClothScreen() {
     const [loading, setLoading] = useState(false)
@@ -25,9 +32,31 @@ export default function AddClothScreen() {
     const [size, setSize] = useState('')
     const [selectedTags, setSelectedTags] = useState<string[]>([])
     const [purchaseDate, setPurchaseDate] = useState('')
+    const [imageUri, setImageUri] = useState<string | null>(null)
+
+    const pickImage = async () => {
+        const permissionResult =
+            await ImagePicker.requestMediaLibraryPermissionsAsync()
+        if (!permissionResult.granted) {
+            Alert.alert(
+                'Permission required',
+                'Permission to access media library is required!'
+            )
+            return
+        }
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 0.7,
+        })
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            setImageUri(result.assets[0].uri)
+        }
+    }
 
     const categories = Object.values(CLOTHING_CATEGORIES)
     const availableTags = Object.values(CLOTHING_TAGS)
+    const colors = Object.values(CLOTHING_COLORS)
 
     const handleSubmit = async () => {
         if (!name.trim()) {
@@ -41,8 +70,14 @@ export default function AddClothScreen() {
         }
 
         setLoading(true)
-
         try {
+            let uploadedImageUrl: string | undefined = undefined
+            if (imageUri) {
+                uploadedImageUrl = await uploadImage(
+                    imageUri,
+                    `clothes/${Date.now()}.jpg`
+                )
+            }
             const itemData = {
                 name: name.trim(),
                 category: category,
@@ -52,8 +87,8 @@ export default function AddClothScreen() {
                 size: size.trim() || undefined,
                 tags: selectedTags.length > 0 ? selectedTags : undefined,
                 purchaseDate: purchaseDate || undefined,
+                imageUrl: uploadedImageUrl,
             }
-
             await apiService.addClothingItem(itemData)
             Alert.alert('Success', 'Item added to your wardrobe!', [
                 { text: 'OK', onPress: () => router.push('/wardrobe') },
@@ -68,7 +103,7 @@ export default function AddClothScreen() {
 
     return (
         <ImageBackground
-            source={require('../assets/ItemPage.png')}
+            source={require('../assets/AddClothPage.jpg')}
             style={styles.backgroundImage}
             resizeMode="cover"
         >
@@ -88,6 +123,36 @@ export default function AddClothScreen() {
                     contentContainerStyle={styles.scrollContent}
                     showsVerticalScrollIndicator={false}
                 >
+                    {/* Image Picker */}
+                    <View style={styles.inputGroup}>
+                        <TouchableOpacity
+                            style={styles.submitButton}
+                            onPress={pickImage}
+                            disabled={loading}
+                        >
+                            <Text style={styles.submitButtonText}>
+                                {imageUri ? 'Change Image' : 'Pick Image'}
+                            </Text>
+                        </TouchableOpacity>
+                        {imageUri && (
+                            <View
+                                style={{ alignItems: 'center', marginTop: 10 }}
+                            >
+                                <Image
+                                    source={{ uri: imageUri }}
+                                    style={{
+                                        width: 120,
+                                        height: 120,
+                                        borderRadius: 10,
+                                        marginBottom: 5,
+                                    }}
+                                />
+                                <Text style={{ color: 'green' }}>
+                                    Image selected
+                                </Text>
+                            </View>
+                        )}
+                    </View>
                     {/* Name */}
                     <View style={styles.inputGroup}>
                         <Text style={styles.label}>Name *</Text>
@@ -135,14 +200,35 @@ export default function AddClothScreen() {
 
                     {/* Color */}
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Color</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={color}
-                            onChangeText={setColor}
-                            placeholder="e.g., White"
-                            placeholderTextColor="#999"
-                        />
+                        <Text style={styles.label}>Color *</Text>
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                        >
+                            <View style={styles.colorContainer}>
+                                {colors.map((col) => (
+                                    <TouchableOpacity
+                                        key={col}
+                                        style={[
+                                            styles.colorButton,
+                                            color === col &&
+                                                styles.colorButtonActive,
+                                        ]}
+                                        onPress={() => setColor(col)}
+                                    >
+                                        <Text
+                                            style={[
+                                                styles.colorButtonText,
+                                                color === col &&
+                                                    styles.colorButtonTextActive,
+                                            ]}
+                                        >
+                                            {col}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        </ScrollView>
                     </View>
 
                     {/* Brand */}
@@ -270,18 +356,21 @@ const styles = StyleSheet.create({
     },
     header: {
         padding: 20,
-        backgroundColor: '#c19a6b',
+        backgroundColor: '#e5d6b3',
         flexDirection: 'row',
         alignItems: 'center',
     },
     backButton: {
         padding: 10,
-        marginRight: 10,
+        marginRight: 0,
     },
     title: {
+        // position: 'absolute',
+        flex: 1,
         fontSize: 20,
         fontWeight: 'bold',
         color: 'white',
+        textAlign: 'center',
     },
     content: {
         flex: 1,
@@ -325,8 +414,8 @@ const styles = StyleSheet.create({
         borderColor: '#ddd',
     },
     categoryButtonActive: {
-        backgroundColor: 'brown',
-        borderColor: 'brown',
+        backgroundColor: '#816802',
+        borderColor: '#816802',
     },
     categoryButtonText: {
         fontSize: 14,
@@ -334,6 +423,31 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     categoryButtonTextActive: {
+        color: 'white',
+    },
+    colorContainer: {
+        flexDirection: 'row',
+        paddingVertical: 5,
+    },
+    colorButton: {
+        backgroundColor: 'white',
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderRadius: 20,
+        marginRight: 10,
+        borderWidth: 1,
+        borderColor: '#ddd',
+    },
+    colorButtonActive: {
+        backgroundColor: '#816802',
+        borderColor: '#816802',
+    },
+    colorButtonText: {
+        fontSize: 14,
+        color: '#666',
+        fontWeight: '500',
+    },
+    colorButtonTextActive: {
         color: 'white',
     },
     tagsContainer: {

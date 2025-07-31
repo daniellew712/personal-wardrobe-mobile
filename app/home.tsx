@@ -1,4 +1,5 @@
 import React from 'react'
+import { apiService } from '../src/services/api'
 import { router } from 'expo-router'
 import {
     View,
@@ -16,26 +17,36 @@ import { useAuth } from '../src/contexts/AuthContext'
 import { Ionicons } from '@expo/vector-icons'
 
 export default function HomeScreen() {
-    const { user, loading, signOut } = useAuth()
-
-    // const handleSignOut = async () => {
-    //     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-    //         { text: 'Cancel', style: 'cancel' },
-    //         {
-    //             text: 'Sign Out',
-    //             style: 'destructive',
-    //             onPress: async () => {
-    //                 try {
-    //                     await signOut()
-    //                     router.replace('/auth/login')
-    //                 } catch {
-    //                     Alert.alert('Error', 'Failed to sign out')
-    //                 }
-    //             },
-    //         },
-    //     ])
-    // }
-
+    const { user, loading } = useAuth()
+    const [favoriteColor, setFavoriteColor] = React.useState('white')
+    React.useEffect(() => {
+        const fetchWardrobeColors = async () => {
+            try {
+                const items: { color?: string }[] =
+                    await apiService.getClothes()
+                const colorCounts: Record<string, number> = {}
+                items.forEach((item) => {
+                    if (item.color) {
+                        colorCounts[item.color] =
+                            (colorCounts[item.color] || 0) + 1
+                    }
+                })
+                // Find the color with the highest count
+                let maxColor = '#f5e6c5'
+                let maxCount = 0
+                Object.entries(colorCounts).forEach(([color, count]) => {
+                    if (typeof count === 'number' && count > maxCount) {
+                        maxColor = color
+                        maxCount = count
+                    }
+                })
+                setFavoriteColor(maxColor)
+            } catch (error) {
+                console.error('Failed to fetch wardrobe items:', error)
+            }
+        }
+        fetchWardrobeColors()
+    }, [])
     if (loading) {
         return (
             <SafeAreaView style={styles.container}>
@@ -83,20 +94,18 @@ export default function HomeScreen() {
                         <Text style={styles.userInfo}>Not authenticated</Text>
                     )}
                 </View>
-
-                <View style={styles.content}>
-                    <TouchableOpacity style={styles.card}>
-                        <Text style={styles.cardTitle}>Outfits</Text>
-                        <Text style={styles.cardSubtitle}>
-                            Create and save outfits
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.card}>
-                        <Text style={styles.cardTitle}>Statistics</Text>
-                        <Text style={styles.cardSubtitle}>
-                            View wearing patterns
-                        </Text>
-                    </TouchableOpacity>
+                <View style={styles.colorStatContainer}>
+                    <View
+                        style={[
+                            styles.circleContainer,
+                            { backgroundColor: favoriteColor || '#f5e6c5' },
+                        ]}
+                    >
+                        <Text style={styles.circleText}>My Favorite Color</Text>
+                    </View>
+                    <View style={styles.circleContainer}>
+                        <Text style={styles.circleText}>Color of 2025</Text>
+                    </View>
                 </View>
                 <ScrollView horizontal={true}>
                     {/* gallery items go here */}
@@ -126,16 +135,6 @@ const styles = StyleSheet.create({
         padding: 5,
         borderRadius: 30,
     },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: 'white',
-        marginBottom: 5,
-    },
-    subtitle: {
-        fontSize: 16,
-        color: 'rgba(255, 255, 255, 0.8)',
-    },
     closetText: {
         fontSize: 10,
         fontWeight: 500,
@@ -150,16 +149,6 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-start',
         minWidth: 100,
     },
-    closetTitle: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: 'white',
-        marginBottom: 2,
-    },
-    closetSubtitle: {
-        fontSize: 12,
-        color: 'rgba(255, 255, 255, 0.8)',
-    },
     userInfo: {
         fontSize: 14,
         color: 'rgba(255, 255, 255, 0.9)',
@@ -171,25 +160,6 @@ const styles = StyleSheet.create({
         marginTop: 8,
         width: '100%',
     },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 8,
-    },
-    // signOutButton: {
-    //     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    //     paddingHorizontal: 12,
-    //     paddingVertical: 6,
-    //     borderRadius: 6,
-    //     marginTop: 8,
-    // },
-    // signOutText: {
-    //     color: 'white',
-    //     fontSize: 12,
-    //     fontWeight: '500',
-    // },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -204,27 +174,30 @@ const styles = StyleSheet.create({
         padding: 20,
         gap: 15,
     },
-    card: {
-        backgroundColor: 'white',
-        padding: 20,
-        borderRadius: 12,
+    colorStatContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 40,
+        marginVertical: 50,
+    },
+    circleContainer: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        backgroundColor: '#A47764',
+        justifyContent: 'center',
+        alignItems: 'center',
         shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 3,
+        elevation: 2,
     },
-    cardTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#333',
-        marginBottom: 5,
-    },
-    cardSubtitle: {
+    circleText: {
         fontSize: 14,
-        color: '#666',
+        color: 'light black',
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
 })
