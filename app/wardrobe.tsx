@@ -19,7 +19,7 @@ export default function WardrobeScreen() {
     const [loading, setLoading] = useState(true)
 
     // Sort and Filter states
-    const [sortBy, setSortBy] = useState('name') // 'name', 'purchaseDate', 'size'
+    const [sortBy, setSortBy] = useState('name')
     const [filterBy, setFilterBy] = useState({
         category: '',
         color: '',

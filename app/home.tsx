@@ -15,6 +15,7 @@ import {
 } from 'react-native'
 import { useAuth } from '../src/contexts/AuthContext'
 import { Ionicons } from '@expo/vector-icons'
+import Divider from '../components/Divider'
 
 export default function HomeScreen() {
     const { user, loading } = useAuth()
@@ -107,6 +108,7 @@ export default function HomeScreen() {
                         <Text style={styles.circleText}>Color of 2025</Text>
                     </View>
                 </View>
+                <Divider style={{ backgroundColor: 'white', height: 2 }} />
                 <ScrollView horizontal={true}>
                     {/* gallery items go here */}
                 </ScrollView>

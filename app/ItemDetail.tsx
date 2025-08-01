@@ -13,6 +13,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     Image,
+    ImageBackground,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { apiService } from '../src/services/api'
@@ -132,243 +133,272 @@ export default function ItemDetailScreen() {
     }
 
     return (
-        <SafeAreaView style={styles.container}>
-            {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity
-                    style={styles.backButton}
-                    onPress={() => router.back()}
-                >
-                    <Ionicons name="arrow-back" size={24} color="white" />
-                </TouchableOpacity>
-                <Text style={styles.title}>Item Details</Text>
-                <TouchableOpacity
-                    style={styles.deleteButton}
-                    onPress={async () => {
-                        try {
-                            await apiService.deleteClothingItem(id as string)
-                            Alert.alert('Deleted', 'Item deleted!')
-                            router.back()
-                        } catch (error) {
-                            Alert.alert('Error', 'Failed to delete item')
-                        }
-                    }}
-                >
-                    <Ionicons name="trash" size={22} color="white" />
-                </TouchableOpacity>
-            </View>
+        <ImageBackground
+            source={require('../assets/wardrobePage.jpg')}
+            style={styles.backgroundImage}
+            resizeMode="cover"
+        >
+            <SafeAreaView style={styles.container}>
+                {/* Header */}
+                <View style={styles.header}>
+                    <TouchableOpacity
+                        style={styles.backButton}
+                        onPress={() => router.back()}
+                    >
+                        <Ionicons name="arrow-back" size={24} color="white" />
+                    </TouchableOpacity>
+                    <Text style={styles.title}>Item Details</Text>
+                    <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={async () => {
+                            try {
+                                await apiService.deleteClothingItem(
+                                    id as string
+                                )
+                                Alert.alert('Deleted', 'Item deleted!')
+                                router.back()
+                            } catch (error) {
+                                Alert.alert('Error', 'Failed to delete item')
+                            }
+                        }}
+                    >
+                        <Ionicons name="trash" size={22} color="white" />
+                    </TouchableOpacity>
+                </View>
 
-            {/* Content */}
-            <ScrollView style={styles.content}>
-                <View style={styles.rowContainer}>
-                    <View style={styles.imageContainer}>
-                        {item.imageUrl && (
-                            <Image
-                                source={{ uri: item.imageUrl }}
-                                style={styles.detailImage}
-                            />
-                        )}
-                        {/* Heart Button */}
-                        <TouchableOpacity
-                            style={styles.heartButton}
-                            onPress={async () => {
-                                try {
-                                    const updated =
-                                        await apiService.putClothingItem(
-                                            id as string,
-                                            { favorite: !item.favorite }
-                                        )
-                                    setItem((prev: any) => ({
-                                        ...prev,
-                                        favorite: updated.favorite,
-                                    }))
-                                } catch {
-                                    Alert.alert('Failed to update favorite')
+                {/* Content */}
+                <ScrollView style={styles.content}>
+                    <View style={styles.rowContainer}>
+                        <View style={styles.imageContainer}>
+                            {item.imageUrl && (
+                                <Image
+                                    source={{ uri: item.imageUrl }}
+                                    style={styles.detailImage}
+                                />
+                            )}
+                            {/* Heart Button */}
+                            <TouchableOpacity
+                                style={styles.heartButton}
+                                onPress={async () => {
+                                    try {
+                                        const updated =
+                                            await apiService.putClothingItem(
+                                                id as string,
+                                                { favorite: !item.favorite }
+                                            )
+                                        setItem((prev: any) => ({
+                                            ...prev,
+                                            favorite: updated.favorite,
+                                        }))
+                                    } catch {
+                                        Alert.alert('Failed to update favorite')
+                                    }
+                                }}
+                            >
+                                <Ionicons
+                                    name={
+                                        item.favorite
+                                            ? 'heart'
+                                            : 'heart-outline'
+                                    }
+                                    size={18}
+                                    color={item.favorite ? '#e74c3c' : '#aaa'}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.fixedDetailCard}>
+                            <Text style={styles.itemName}>{item.name}</Text>
+                            <View style={styles.detailRow}>
+                                <Text style={styles.label}>Category:</Text>
+                                <Text style={styles.value}>
+                                    {item.category}
+                                </Text>
+                            </View>
+                            <View style={styles.detailRow}>
+                                <Text style={styles.label}>Color:</Text>
+                                <Text style={styles.value}>{item.color}</Text>
+                            </View>
+                            {item.brand && (
+                                <View style={styles.detailRow}>
+                                    <Text style={styles.label}>Brand:</Text>
+                                    <Text style={styles.value}>
+                                        {item.brand}
+                                    </Text>
+                                </View>
+                            )}
+                            {item.size && (
+                                <View style={styles.detailRow}>
+                                    <Text style={styles.label}>Size:</Text>
+                                    <Text style={styles.value}>
+                                        {item.size}
+                                    </Text>
+                                </View>
+                            )}
+                            {item.material && (
+                                <View style={styles.detailRow}>
+                                    <Text style={styles.label}>Material:</Text>
+                                    <Text style={styles.value}>
+                                        {item.material}
+                                    </Text>
+                                </View>
+                            )}
+                            {item.tags && item.tags.length > 0 && (
+                                <View style={styles.detailRow}>
+                                    <Text style={styles.label}>Tags:</Text>
+                                    <Text style={styles.value}>
+                                        {item.tags.join(', ')}
+                                    </Text>
+                                </View>
+                            )}
+                            {item.notes && (
+                                <View style={styles.notesSection}>
+                                    <Text style={styles.label}>Notes:</Text>
+                                    <Text style={styles.notesText}>
+                                        {item.notes}
+                                    </Text>
+                                </View>
+                            )}
+                            <TouchableOpacity
+                                style={styles.editButton}
+                                onPress={() =>
+                                    router.push({
+                                        pathname: '/editItem',
+                                        params: { id },
+                                    })
                                 }
-                            }}
+                            >
+                                <Ionicons
+                                    name="pencil"
+                                    size={18}
+                                    color="#c19a6b"
+                                />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    {/* Chat Section */}
+                    <View style={styles.chatSection}>
+                        <TouchableOpacity
+                            style={styles.chatToggle}
+                            onPress={() => setShowChat(!showChat)}
                         >
                             <Ionicons
-                                name={item.favorite ? 'heart' : 'heart-outline'}
-                                size={18}
-                                color={item.favorite ? '#e74c3c' : '#aaa'}
+                                name="chatbubble-outline"
+                                size={20}
+                                color="#c19a6b"
+                            />
+                            <Text style={styles.chatToggleText}>
+                                AI Styling Assistant
+                            </Text>
+                            <Ionicons
+                                name={showChat ? 'chevron-up' : 'chevron-down'}
+                                size={20}
+                                color="#c19a6b"
                             />
                         </TouchableOpacity>
-                    </View>
-                    <View style={styles.fixedDetailCard}>
-                        <Text style={styles.itemName}>{item.name}</Text>
-                        <View style={styles.detailRow}>
-                            <Text style={styles.label}>Category:</Text>
-                            <Text style={styles.value}>{item.category}</Text>
-                        </View>
-                        <View style={styles.detailRow}>
-                            <Text style={styles.label}>Color:</Text>
-                            <Text style={styles.value}>{item.color}</Text>
-                        </View>
-                        {item.brand && (
-                            <View style={styles.detailRow}>
-                                <Text style={styles.label}>Brand:</Text>
-                                <Text style={styles.value}>{item.brand}</Text>
-                            </View>
-                        )}
-                        {item.size && (
-                            <View style={styles.detailRow}>
-                                <Text style={styles.label}>Size:</Text>
-                                <Text style={styles.value}>{item.size}</Text>
-                            </View>
-                        )}
-                        {item.material && (
-                            <View style={styles.detailRow}>
-                                <Text style={styles.label}>Material:</Text>
-                                <Text style={styles.value}>
-                                    {item.material}
-                                </Text>
-                            </View>
-                        )}
-                        {item.tags && item.tags.length > 0 && (
-                            <View style={styles.detailRow}>
-                                <Text style={styles.label}>Tags:</Text>
-                                <Text style={styles.value}>
-                                    {item.tags.join(', ')}
-                                </Text>
-                            </View>
-                        )}
-                        {item.notes && (
-                            <View style={styles.notesSection}>
-                                <Text style={styles.label}>Notes:</Text>
-                                <Text style={styles.notesText}>
-                                    {item.notes}
-                                </Text>
-                            </View>
-                        )}
-                        <TouchableOpacity
-                            style={styles.editButton}
-                            onPress={() =>
-                                router.push({
-                                    pathname: '/editItem',
-                                    params: { id },
-                                })
-                            }
-                        >
-                            <Ionicons name="pencil" size={18} color="#c19a6b" />
-                        </TouchableOpacity>
-                    </View>
-                </View>
 
-                {/* Chat Section */}
-                <View style={styles.chatSection}>
-                    <TouchableOpacity
-                        style={styles.chatToggle}
-                        onPress={() => setShowChat(!showChat)}
-                    >
-                        <Ionicons
-                            name="chatbubble-outline"
-                            size={20}
-                            color="#c19a6b"
-                        />
-                        <Text style={styles.chatToggleText}>
-                            AI Styling Assistant
-                        </Text>
-                        <Ionicons
-                            name={showChat ? 'chevron-up' : 'chevron-down'}
-                            size={20}
-                            color="#c19a6b"
-                        />
-                    </TouchableOpacity>
-
-                    {showChat && (
-                        <View style={styles.chatContainer}>
-                            <ScrollView style={styles.chatMessages}>
-                                {chatMessages.length === 0 ? (
-                                    <Text style={styles.chatPlaceholder}>
-                                        Ask me anything about styling this item!
-                                    </Text>
-                                ) : (
-                                    chatMessages.map((message) => (
-                                        <View
-                                            key={message.id}
-                                            style={[
-                                                styles.messageContainer,
-                                                message.isUser
-                                                    ? styles.userMessage
-                                                    : styles.aiMessage,
-                                            ]}
-                                        >
-                                            <Text
+                        {showChat && (
+                            <View style={styles.chatContainer}>
+                                <ScrollView style={styles.chatMessages}>
+                                    {chatMessages.length === 0 ? (
+                                        <Text style={styles.chatPlaceholder}>
+                                            Ask me anything about styling this
+                                            item!
+                                        </Text>
+                                    ) : (
+                                        chatMessages.map((message) => (
+                                            <View
+                                                key={message.id}
                                                 style={[
-                                                    styles.messageText,
+                                                    styles.messageContainer,
                                                     message.isUser
-                                                        ? styles.userMessageText
-                                                        : styles.aiMessageText,
+                                                        ? styles.userMessage
+                                                        : styles.aiMessage,
                                                 ]}
                                             >
-                                                {message.text}
+                                                <Text
+                                                    style={[
+                                                        styles.messageText,
+                                                        message.isUser
+                                                            ? styles.userMessageText
+                                                            : styles.aiMessageText,
+                                                    ]}
+                                                >
+                                                    {message.text}
+                                                </Text>
+                                            </View>
+                                        ))
+                                    )}
+                                    {chatLoading && (
+                                        <View
+                                            style={[
+                                                styles.messageContainer,
+                                                styles.aiMessage,
+                                            ]}
+                                        >
+                                            <Text style={styles.aiMessageText}>
+                                                Generating...
                                             </Text>
                                         </View>
-                                    ))
-                                )}
-                                {chatLoading && (
-                                    <View
-                                        style={[
-                                            styles.messageContainer,
-                                            styles.aiMessage,
-                                        ]}
-                                    >
-                                        <Text style={styles.aiMessageText}>
-                                            Generating...
-                                        </Text>
-                                    </View>
-                                )}
-                            </ScrollView>
+                                    )}
+                                </ScrollView>
 
-                            <KeyboardAvoidingView
-                                behavior={
-                                    Platform.OS === 'ios' ? 'padding' : 'height'
-                                }
-                                style={styles.chatInputContainer}
-                            >
-                                <TextInput
-                                    style={styles.chatInput}
-                                    value={inputMessage}
-                                    onChangeText={setInputMessage}
-                                    placeholder="Ask about styling, matching, or care..."
-                                    placeholderTextColor="#999"
-                                    multiline
-                                    maxLength={500}
-                                />
-                                <TouchableOpacity
-                                    style={[
-                                        styles.sendButton,
-                                        (!inputMessage.trim() || chatLoading) &&
-                                            styles.sendButtonDisabled,
-                                    ]}
-                                    onPress={sendMessage}
-                                    disabled={
-                                        !inputMessage.trim() || chatLoading
+                                <KeyboardAvoidingView
+                                    behavior={
+                                        Platform.OS === 'ios'
+                                            ? 'padding'
+                                            : 'height'
                                     }
+                                    style={styles.chatInputContainer}
                                 >
-                                    <Ionicons
-                                        name="send"
-                                        size={20}
-                                        color="white"
+                                    <TextInput
+                                        style={styles.chatInput}
+                                        value={inputMessage}
+                                        onChangeText={setInputMessage}
+                                        placeholder="Ask about styling, matching, or care..."
+                                        placeholderTextColor="#999"
+                                        multiline
+                                        maxLength={500}
                                     />
-                                </TouchableOpacity>
-                            </KeyboardAvoidingView>
-                        </View>
-                    )}
-                </View>
-            </ScrollView>
-        </SafeAreaView>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.sendButton,
+                                            (!inputMessage.trim() ||
+                                                chatLoading) &&
+                                                styles.sendButtonDisabled,
+                                        ]}
+                                        onPress={sendMessage}
+                                        disabled={
+                                            !inputMessage.trim() || chatLoading
+                                        }
+                                    >
+                                        <Ionicons
+                                            name="send"
+                                            size={20}
+                                            color="white"
+                                        />
+                                    </TouchableOpacity>
+                                </KeyboardAvoidingView>
+                            </View>
+                        )}
+                    </View>
+                </ScrollView>
+            </SafeAreaView>
+        </ImageBackground>
     )
 }
 
 const styles = StyleSheet.create({
+    backgroundImage: {
+        flex: 1,
+    },
     container: {
         flex: 1,
-        backgroundColor: '#f8f9fa',
+        backgroundColor: 'transparent',
     },
     header: {
         padding: 20,
-        backgroundColor: '#c19a6b',
+        backgroundColor: '#e5d6b3',
         flexDirection: 'row',
         alignItems: 'center',
         position: 'relative',
