@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { auth } from '../lib/firebase' // Firebase config
 
-const API_URL = 'http://192.168.86.27:3000' // Replace with my computer's IP address
+const API_URL = process.env.EXPO_PUBLIC_API_URL // Replace with my computer's IP address
 
 const api = axios.create({
     baseURL: API_URL,

@@ -38,10 +38,7 @@ export default function AddClothScreen() {
         const permissionResult =
             await ImagePicker.requestMediaLibraryPermissionsAsync()
         if (!permissionResult.granted) {
-            Alert.alert(
-                'Permission required',
-                'Permission to access media library is required!'
-            )
+            Alert.alert('Permission required')
             return
         }
         const result = await ImagePicker.launchImageLibraryAsync({
@@ -94,7 +91,8 @@ export default function AddClothScreen() {
                 { text: 'OK', onPress: () => router.push('/wardrobe') },
             ])
         } catch (error) {
-            console.error('Error adding item:', error)
+            // added for best practice
+            console.error('Error when adding item:', error)
             Alert.alert('Error', 'Failed to add item. Please try again.')
         } finally {
             setLoading(false)
@@ -322,7 +320,7 @@ export default function AddClothScreen() {
                             style={styles.input}
                             value={purchaseDate}
                             onChangeText={setPurchaseDate}
-                            placeholder="YYYY-MM-DD (e.g., 2024-01-15)"
+                            placeholder="YYYY-MM-DD (e.g., 2025-06-30)"
                             placeholderTextColor="#999"
                         />
                     </View>
@@ -355,7 +353,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     header: {
-        padding: 20,
+        padding: 12,
         backgroundColor: '#e5d6b3',
         flexDirection: 'row',
         alignItems: 'center',
@@ -365,7 +363,6 @@ const styles = StyleSheet.create({
         marginRight: 0,
     },
     title: {
-        // position: 'absolute',
         flex: 1,
         fontSize: 20,
         fontWeight: 'bold',

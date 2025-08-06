@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
     },
     header: {
-        padding: 20,
+        padding: 12,
         backgroundColor: '#e5d6b3',
         flexDirection: 'row',
         alignItems: 'center',
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     deleteButton: {
         position: 'absolute',
         right: 20,
-        top: 20,
+        top: 12,
         padding: 8,
         zIndex: 2,
     },

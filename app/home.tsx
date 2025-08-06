@@ -3,28 +3,47 @@ import { apiService } from '../src/services/api'
 import { router } from 'expo-router'
 import {
     View,
-    ScrollView,
     Text,
     StyleSheet,
     SafeAreaView,
     TouchableOpacity,
-    Alert,
     ImageBackground,
-    Image,
-    Dimensions,
 } from 'react-native'
 import { useAuth } from '../src/contexts/AuthContext'
 import { Ionicons } from '@expo/vector-icons'
 import Divider from '../components/Divider'
+import ProfilePicture from '../src/components/ProfilePicture'
+import Slider from '../components/Slider'
 
 export default function HomeScreen() {
     const { user, loading } = useAuth()
+
+    const [favoriteClothes, setFavoriteClothes] = React.useState<any[]>([])
     const [favoriteColor, setFavoriteColor] = React.useState('white')
+    const [isLoadingFavorites, setIsLoadingFavorites] = React.useState(true)
+
     React.useEffect(() => {
-        const fetchWardrobeColors = async () => {
+        const fetchWardrobeData = async () => {
             try {
-                const items: { color?: string }[] =
-                    await apiService.getClothes()
+                const items: any[] = await apiService.getClothes()
+                console.log('All items:', items)
+                console.log('Total items count:', items.length)
+
+                // Filter for favorite items
+                const favorites = items.filter((item) => item.favorite === true)
+                console.log('Favorite items found:', favorites.length)
+
+                // Transform favorite Items to match Slider interface
+                const transformedFavorites = favorites.map((item) => ({
+                    id: item.id,
+                    name: item.name || 'Clothing Item',
+                    imageUrl: item.imageUrl || item.image,
+                }))
+
+                setFavoriteClothes(transformedFavorites)
+                setIsLoadingFavorites(false)
+
+                // Calculate favorite color
                 const colorCounts: Record<string, number> = {}
                 items.forEach((item) => {
                     if (item.color) {
@@ -44,10 +63,15 @@ export default function HomeScreen() {
                 setFavoriteColor(maxColor)
             } catch (error) {
                 console.error('Failed to fetch wardrobe items:', error)
+                setIsLoadingFavorites(false)
             }
         }
-        fetchWardrobeColors()
-    }, [])
+
+        if (user) {
+            fetchWardrobeData()
+        }
+    }, [user])
+
     if (loading) {
         return (
             <SafeAreaView style={styles.container}>
@@ -68,17 +92,30 @@ export default function HomeScreen() {
                 <View style={styles.header}>
                     {user && (
                         <View style={styles.userContainer}>
-                            <Text style={styles.userInfo}>
-                                Welcome, {user.email}
-                            </Text>
-                            <TouchableOpacity
-                                style={styles.closetnavigator}
-                                onPress={() => router.push('/wardrobe')}
-                            >
-                                <Text style={styles.closetText}>
-                                    View My Closet
+                            <View style={styles.profileRow}>
+                                <ProfilePicture />
+                                <Text style={styles.userInfo}>
+                                    Welcome, {user.email}
                                 </Text>
-                            </TouchableOpacity>
+                            </View>
+                            <View style={styles.buttonRow}>
+                                <TouchableOpacity
+                                    style={styles.closetnavigator}
+                                    onPress={() => router.push('/wardrobe')}
+                                >
+                                    <Text style={styles.closetText}>
+                                        View My Closet
+                                    </Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.statNavigator}
+                                    onPress={() => router.push('/statistics')}
+                                >
+                                    <Text style={styles.statText}>
+                                        Closet Statistics
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
                             <TouchableOpacity
                                 style={styles.settingsIcon}
                                 onPress={() => router.push('/profile')}
@@ -109,9 +146,18 @@ export default function HomeScreen() {
                     </View>
                 </View>
                 <Divider style={{ backgroundColor: 'white', height: 2 }} />
-                <ScrollView horizontal={true}>
-                    {/* gallery items go here */}
-                </ScrollView>
+                <View>
+                    <Text style={styles.galleryHeader}>
+                        MY FAVORITE CLOTHES:
+                    </Text>
+                </View>
+                <Slider data={isLoadingFavorites ? [] : favoriteClothes} />
+                <Text style={styles.homeFooter}>
+                    Waves Member Since{' '}
+                    {user?.metadata?.creationTime
+                        ? new Date(user.metadata.creationTime).getFullYear()
+                        : new Date().getFullYear()}
+                </Text>
             </SafeAreaView>
         </ImageBackground>
     )
@@ -126,14 +172,24 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
     },
     header: {
-        padding: 20,
+        padding: 12,
         backgroundColor: '#e5d6b3',
         alignItems: 'center',
     },
+    profileRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    buttonRow: {
+        flexDirection: 'row',
+        gap: 10,
+        marginTop: 10,
+    },
     settingsIcon: {
         position: 'absolute',
-        top: 0,
-        right: 0,
+        top: -5,
+        right: -2,
         padding: 5,
         borderRadius: 30,
     },
@@ -147,14 +203,26 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         paddingVertical: 8,
         borderRadius: 8,
-        marginTop: 10,
         alignSelf: 'flex-start',
         minWidth: 100,
     },
+    statNavigator: {
+        backgroundColor: 'white',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 8,
+        minWidth: 100,
+    },
+    statText: {
+        fontSize: 10,
+        fontWeight: 500,
+        color: 'black',
+    },
     userInfo: {
-        fontSize: 14,
+        fontSize: 15,
         color: 'rgba(255, 255, 255, 0.9)',
         marginTop: 8,
+        marginLeft: 20,
         fontStyle: 'italic',
     },
     userContainer: {
@@ -180,20 +248,20 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        gap: 40,
-        marginVertical: 50,
+        gap: 30,
+        marginVertical: 30,
     },
     circleContainer: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
+        width: 120,
+        height: 120,
+        borderRadius: 60,
         backgroundColor: '#A47764',
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 3,
+        shadowColor: 'white',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
         elevation: 2,
     },
     circleText: {
@@ -201,5 +269,21 @@ const styles = StyleSheet.create({
         color: 'light black',
         fontWeight: 'bold',
         textAlign: 'center',
+    },
+    galleryHeader: {
+        fontSize: 18,
+        color: 'black',
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginTop: 30,
+        marginBottom: 30,
+    },
+    homeFooter: {
+        fontSize: 16,
+        color: 'black',
+        opacity: 0.6,
+        textAlign: 'center',
+        marginTop: 80,
+        fontStyle: 'italic',
     },
 })

@@ -7,11 +7,11 @@ import {
     SafeAreaView,
     TouchableOpacity,
     Alert,
-    // ImageBackground,
     TextInput,
 } from 'react-native'
 import { useAuth } from '../src/contexts/AuthContext'
 import { Ionicons } from '@expo/vector-icons'
+import ProfilePicture from '../src/components/ProfilePicture'
 
 export default function ProfileScreen() {
     const { user, signOut } = useAuth()
@@ -62,11 +62,6 @@ export default function ProfileScreen() {
     }
 
     return (
-        // <ImageBackground
-        //     source={require('../assets/accountbackground.png')}
-        //     style={styles.backgroundImage}
-        //     resizeMode="cover"
-        // >
         <SafeAreaView style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
@@ -76,7 +71,10 @@ export default function ProfileScreen() {
                 >
                     <Ionicons name="arrow-back" size={24} color="white" />
                 </TouchableOpacity>
-                <Text style={styles.title}>Profile</Text>
+                <View>
+                    <ProfilePicture />
+                </View>
+                <Text style={styles.userInfo}> My Profile </Text>
             </View>
 
             {/* Content */}
@@ -108,7 +106,7 @@ export default function ProfileScreen() {
                     />
                 </View>
 
-                {/* Confirm Password */}
+                {/* Confirm Password again */}
                 <View style={styles.inputGroup}>
                     <Text style={styles.label}>Confirm Password</Text>
                     <TextInput
@@ -144,20 +142,16 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
             </View>
         </SafeAreaView>
-        // </ImageBackground>
     )
 }
 
 const styles = StyleSheet.create({
-    // backgroundImage: {
-    //     flex: 1,
-    // },
     container: {
         flex: 1,
         backgroundColor: 'white',
     },
     header: {
-        padding: 20,
+        padding: 12,
         backgroundColor: '#e5d6b3',
         flexDirection: 'row',
         alignItems: 'center',
@@ -170,6 +164,13 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         color: 'white',
+    },
+    userInfo: {
+        fontSize: 24,
+        color: 'white',
+        marginTop: 8,
+        fontWeight: 'bold',
+        marginLeft: 24,
     },
     content: {
         flex: 1,

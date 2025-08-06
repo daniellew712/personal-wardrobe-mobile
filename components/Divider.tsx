@@ -1,4 +1,3 @@
-// Divider.js
 import React from 'react'
 import { View, StyleSheet } from 'react-native'
 
@@ -17,8 +16,8 @@ const Divider = ({ color = '#ccc', height = 1, style }) => {
 const styles = StyleSheet.create({
     divider: {
         width: 'auto',
-        marginLeft: 16,
-        marginRight: 16,
+        marginLeft: 20,
+        marginRight: 20,
     },
 })
 
