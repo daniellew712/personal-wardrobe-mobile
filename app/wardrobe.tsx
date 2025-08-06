@@ -10,6 +10,7 @@ import {
     Alert,
     ScrollView,
     ImageBackground,
+    Image,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { apiService } from '../src/services/api'
@@ -19,7 +20,7 @@ export default function WardrobeScreen() {
     const [loading, setLoading] = useState(true)
 
     // Sort and Filter states
-    const [sortBy, setSortBy] = useState('name') // 'name', 'purchaseDate', 'size'
+    const [sortBy, setSortBy] = useState('name')
     const [filterBy, setFilterBy] = useState({
         category: '',
         color: '',
@@ -41,11 +42,14 @@ export default function WardrobeScreen() {
             console.error('Error:', error)
             Alert.alert('Error', 'Could not load clothes')
         } finally {
+            // turns off the loading state
             setLoading(false)
         }
     }
 
     // Filter and sort clothes
+    // use memo is good for avoiding recaculating
+    // caculates only when category, color, brand, tags changes.
     const filteredAndSortedClothes = useMemo(() => {
         let filtered = clothes.filter((item: any) => {
             if (filterBy.category && item.category !== filterBy.category)
@@ -58,6 +62,7 @@ export default function WardrobeScreen() {
         })
 
         // Sort the filtered results
+        // if value is negative then a before b. otherwise, b before a. 0 then same.
         filtered.sort((a: any, b: any) => {
             switch (sortBy) {
                 case 'purchaseDate':
@@ -73,7 +78,8 @@ export default function WardrobeScreen() {
                         (aIndex === -1 ? 999 : aIndex) -
                         (bIndex === -1 ? 999 : bIndex)
                     )
-                default: // name
+                default:
+                    // compare two strings based on lexicographical order, -1:a comes before b. 0 equal.
                     return (a.name || '').localeCompare(b.name || '')
             }
         })
@@ -477,6 +483,9 @@ export default function WardrobeScreen() {
                         <FlatList
                             data={filteredAndSortedClothes}
                             keyExtractor={(item: any) => item.id}
+                            numColumns={3}
+                            columnWrapperStyle={styles.row}
+                            contentContainerStyle={styles.flatListContainer}
                             renderItem={({ item }) => (
                                 <TouchableOpacity
                                     style={styles.clothingItem}
@@ -484,14 +493,22 @@ export default function WardrobeScreen() {
                                         router.push(`/ItemDetail?id=${item.id}`)
                                     }
                                 >
-                                    <Text style={styles.itemName}>
+                                    <Image
+                                        source={{
+                                            uri: item.imageUrl || item.image,
+                                        }}
+                                        style={styles.itemImage}
+                                        resizeMode="cover"
+                                        defaultSource={require('../assets/hanger.jpg')}
+                                    />
+                                    {/* show one line for name of the item to make it clean */}
+                                    <Text
+                                        style={styles.itemName}
+                                        numberOfLines={1}
+                                        ellipsizeMode="tail"
+                                    >
                                         {item.name}
                                     </Text>
-                                    {item.brand && (
-                                        <Text style={styles.itemBrand}>
-                                            {item.brand}
-                                        </Text>
-                                    )}
                                 </TouchableOpacity>
                             )}
                         />
@@ -511,7 +528,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
     },
     header: {
-        padding: 20,
+        padding: 12,
         backgroundColor: '#e5d6b3',
         alignItems: 'center',
     },
@@ -574,35 +591,36 @@ const styles = StyleSheet.create({
     },
     clothingItem: {
         backgroundColor: 'white',
-        padding: 15,
-        marginVertical: 8,
+        padding: 10,
+        margin: 5,
         borderRadius: 8,
+        alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 3.84,
         elevation: 5,
+        width: 100,
+    },
+    itemImage: {
+        width: 80,
+        height: 80,
+        borderRadius: 8,
+        backgroundColor: '#f5f5f5',
+        marginBottom: 8,
     },
     itemName: {
-        fontSize: 18,
+        fontSize: 12,
         fontWeight: '600',
         color: '#333',
-        marginBottom: 4,
+        textAlign: 'center',
     },
-    itemCategory: {
-        fontSize: 14,
-        color: '#666',
-        marginBottom: 2,
+    // item start from left
+    row: {
+        justifyContent: 'flex-start',
     },
-    itemColor: {
-        fontSize: 14,
-        color: '#666',
-        marginBottom: 2,
-    },
-    itemBrand: {
-        fontSize: 12,
-        color: '#999',
-        fontStyle: 'italic',
+    flatListContainer: {
+        paddingHorizontal: 15,
     },
     controlsContainer: {
         flexDirection: 'row',
