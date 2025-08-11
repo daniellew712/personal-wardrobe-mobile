@@ -21,7 +21,7 @@ A React Native mobile app built with Expo for managing your online personal ward
 
 ## Available Scripts
 
-- `npm start` - Start the Expo development server
+- `npm start` - Start the Expo development server. Choose 's' to use expo and then 'i' to start simulator.
 - `npm test` - Run the tests
 - `npm run build` - Build the app for production
 
